@@ -5,11 +5,13 @@
           <div>购物街</div>
         </template>
       </nav-bar>
+      <recommand-view :recommands="recommends"></recommand-view>
     </div>
 </template>
 
 <script>
 import NavBar from 'components/common/navbar/NavBar'
+import RecommandView from './childComps/RecommandView'
 import { getHomeMultidata } from 'network/home'
 export default {
   name: 'Home',
@@ -20,7 +22,8 @@ export default {
     }
   },
   components: {
-    NavBar
+    NavBar,
+    RecommandView
   },
   created () {
     getHomeMultidata()
