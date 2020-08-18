@@ -8,59 +8,69 @@
       <home-swiper :banners="banners"></home-swiper>
       <recommand-view :recommands="recommends"></recommand-view>
       <feature-view></feature-view>
-      <tab-control :titles="['流行','新款','精选']"></tab-control>
+      <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick"></tab-control>
+      <goods-list :goods="showGoods"></goods-list>
       <ul>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-          <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
-        <li>111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
+        <li>11111</li>
       </ul>
     </div>
 </template>
@@ -71,13 +81,30 @@ import HomeSwiper from './childComps/HomeSwiper'
 import RecommandView from './childComps/RecommandView'
 import FeatureView from './childComps/FeatureView'
 import TabControl from 'components/content/tabControl/TabControl'
-import { getHomeMultidata } from 'network/home'
+import GoodsList from 'components/content/goods/GoodsList'
+import { getHomeMultidata, getHomeGoods } from 'network/home'
+import { NEW, POP, SELL } from 'common/const'
 export default {
   name: 'Home',
   data () {
     return {
       banners: [],
-      recommends: []
+      recommends: [],
+      goods: {
+        [NEW]: {
+          page: 0,
+          list: []
+        },
+        [POP]: {
+          page: 0,
+          list: []
+        },
+        [SELL]: {
+          page: 0,
+          list: []
+        }
+      },
+      currentTab: POP
     }
   },
   components: {
@@ -85,20 +112,45 @@ export default {
     HomeSwiper,
     RecommandView,
     FeatureView,
-    TabControl
+    TabControl,
+    GoodsList
   },
   created () {
-    getHomeMultidata()
-      .then(res => {
-        this.banners = res.data.banner.list
-        this.recommends = res.data.recommend.list
-        console.log(res)
-      })
+    this.getHomeMultidata()
+  },
+  computed: {
+    showGoods () {
+      return this.goods[this.currentTab].list
+    }
   },
   methods: {
-    itemClick () {
-      this.$store.dispatch('updateText', 'button click').then(result => {
-        console.log(result)
+    tabClick (index) {
+      console.log(index)
+      switch (index) {
+        case 0:
+          this.currentTab = POP
+          break
+        case 1:
+          this.currentTab = NEW
+          break
+        case 2:
+          this.currentTab = SELL
+          break
+      }
+    },
+    getHomeMultidata () {
+      getHomeMultidata()
+        .then(res => {
+          this.banners = res.data.banner.list
+          this.recommends = res.data.recommend.list
+          console.log(res)
+        })
+    },
+    getHomeGoods (type) {
+      const page = this.goods[type].page + 1
+      getHomeGoods(type, page).then(res => {
+        this.goods[type].list.push(...res.data.list)
+        this.goods[type].page += 1
       })
     }
   }
