@@ -1,3 +1,3 @@
 export const NEW = 'new'
-export const TOP = 'top'
+export const POP = 'pop'
 export const SELL = 'sell'
