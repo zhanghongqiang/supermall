@@ -5,73 +5,19 @@
           <div>购物街</div>
         </template>
       </nav-bar>
-      <home-swiper :banners="banners"></home-swiper>
-      <recommand-view :recommands="recommends"></recommand-view>
-      <feature-view></feature-view>
-      <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick"></tab-control>
-      <goods-list :goods="showGoods"></goods-list>
-      <ul>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-        <li>11111</li>
-      </ul>
+      <Scroll class="content"
+              ref="scroll"
+              :probeType="3"
+              @scroll="computeScroll"
+              @pullingUp="loadMore"
+              :pullUpLoad="true">
+        <home-swiper :banners="banners"></home-swiper>
+        <recommand-view :recommands="recommends"></recommand-view>
+        <feature-view></feature-view>
+        <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick"></tab-control>
+        <goods-list :goods="showGoods"></goods-list>
+      </Scroll>
+      <back-top @click.native="backTopClick" v-show="isShowBackTop"></back-top>
     </div>
 </template>
 
@@ -82,6 +28,8 @@ import RecommandView from './childComps/RecommandView'
 import FeatureView from './childComps/FeatureView'
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/goods/GoodsList'
+import Scroll from 'components/common/scroll/Scroll'
+import BackTop from 'components/content/backTop/BackTop'
 import { getHomeMultidata, getHomeGoods } from 'network/home'
 import { NEW, POP, SELL } from 'common/const'
 export default {
@@ -104,7 +52,8 @@ export default {
           list: []
         }
       },
-      currentTab: POP
+      currentTab: POP,
+      isShowBackTop: true
     }
   },
   components: {
@@ -113,7 +62,9 @@ export default {
     RecommandView,
     FeatureView,
     TabControl,
-    GoodsList
+    GoodsList,
+    Scroll,
+    BackTop
   },
   created () {
     this.getHomeMultidata()
@@ -124,8 +75,14 @@ export default {
     }
   },
   methods: {
+    computeScroll (position) {
+      this.isShowBackTop = Math.abs(position.y) < 200
+    },
+    loadMore () {
+      console.log('loadMore')
+      // this.getHomeGoods(this.currentTab)
+    },
     tabClick (index) {
-      console.log(index)
       switch (index) {
         case 0:
           this.currentTab = POP
@@ -143,7 +100,6 @@ export default {
         .then(res => {
           this.banners = res.data.banner.list
           this.recommends = res.data.recommend.list
-          console.log(res)
         })
     },
     getHomeGoods (type) {
@@ -151,7 +107,11 @@ export default {
       getHomeGoods(type, page).then(res => {
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1
+        this.$refs.scroll.finishPullUp()
       })
+    },
+    backTopClick () {
+      this.$refs.scroll.scrollTo(0, 0, 500)
     }
   }
 }
@@ -168,5 +128,14 @@ export default {
 }
 #home{
   padding: 44px 0 0 0;
+  height: 100vh;
+  position: relative;
+}
+.content{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44px;
+  bottom: 49px;
 }
 </style>
