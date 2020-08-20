@@ -5,16 +5,17 @@
           <div>购物街</div>
         </template>
       </nav-bar>
+      <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick" ref='topTabControl' v-show="showTopTabControl" class="fixed"></tab-control>
       <Scroll class="content"
               ref="scroll"
               :probeType="3"
               @scroll="computeScroll"
               @pullingUp="loadMore"
               :pullUpLoad="true">
-        <home-swiper :banners="banners"></home-swiper>
+        <home-swiper :banners="banners" @swiperImageLoad='swiperImageLoad'></home-swiper>
         <recommand-view :recommands="recommends"></recommand-view>
         <feature-view></feature-view>
-        <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick"></tab-control>
+        <tab-control :titles="['流行','新款','精选']" @tabClick="tabClick" ref='tabControl'></tab-control>
         <goods-list :goods="showGoods"></goods-list>
       </Scroll>
       <back-top @click.native="backTopClick" v-show="isShowBackTop"></back-top>
@@ -32,6 +33,7 @@ import Scroll from 'components/common/scroll/Scroll'
 import BackTop from 'components/content/backTop/BackTop'
 import { getHomeMultidata, getHomeGoods } from 'network/home'
 import { NEW, POP, SELL } from 'common/const'
+import { debounce } from 'common/utils'
 export default {
   name: 'Home',
   data () {
@@ -53,7 +55,9 @@ export default {
         }
       },
       currentTab: POP,
-      isShowBackTop: true
+      isShowBackTop: false,
+      tabControlOffsetTop: 0,
+      showTopTabControl: false
     }
   },
   components: {
@@ -69,14 +73,30 @@ export default {
   created () {
     this.getHomeMultidata()
   },
+  mounted () {
+    const refresh = debounce(this.$refs.scroll.refresh)
+    this.$bus.$on('onImageLoad', () => {
+      refresh()
+    })
+  },
+  activated () {
+    console.log('activated')
+  },
+  deactivated () {
+    console.log('deactivated')
+  },
   computed: {
     showGoods () {
       return this.goods[this.currentTab].list
     }
   },
   methods: {
+    swiperImageLoad () {
+      this.tabControlOffsetTop = this.$refs.tabControl.$el.offsetTop
+    },
     computeScroll (position) {
-      this.isShowBackTop = Math.abs(position.y) < 200
+      this.isShowBackTop = Math.abs(position.y) > 200
+      this.showTopTabControl = Math.abs(position.y) > this.tabControlOffsetTop
     },
     loadMore () {
       console.log('loadMore')
@@ -94,6 +114,8 @@ export default {
           this.currentTab = SELL
           break
       }
+      this.$refs.tabControl.currentIndex = index
+      this.$refs.topTabControl.currentIndex = index
     },
     getHomeMultidata () {
       getHomeMultidata()
@@ -119,17 +141,15 @@ export default {
 <style scoped>
 .home-nav{
   position: fixed;
-  background-color: #ff8198;
-  color: #fff;
   top: 0;
   right: 0;
   left: 0;
-  z-index: 1;
+  background-color: #ff8198;
+  color: #fff;
+  z-index: 9;
 }
 #home{
-  padding: 44px 0 0 0;
   height: 100vh;
-  position: relative;
 }
 .content{
   position: absolute;
@@ -137,5 +157,11 @@ export default {
   right: 0;
   top: 44px;
   bottom: 49px;
+}
+.fixed{
+  position: fixed;
+  top: 44px;
+  right: 0;
+  left: 0;
 }
 </style>
